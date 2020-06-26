@@ -3,9 +3,9 @@ Crossbar base version
 
 crossbar.v - код самого кроссбара
 
-crossbar.vt - тестбенч для него
+simulation/modelsim/crossbar.vt - тестбенч для него
 
-wave-1.bmp, wave-2.bmp, ... - скрины симуляции
+simulation/modelsim/wave-1.bmp, wave-2.bmp, ... - скрины симуляции
 
 RTL.pdf - синтезированная схема
 
