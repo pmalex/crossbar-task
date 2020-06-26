@@ -1,0 +1,273 @@
+//`timescale 1 ps/ 1 ps
+
+module crossbar_vlg_tst();
+	// constants                                           
+	// general purpose registers
+	reg clk;
+	reg reset;
+	
+	// masters
+	reg master_0_req;
+	reg master_0_cmd;
+	wire master_0_ack;
+	wire master_0_resp;
+	wire [31:0] master_0_rdata;
+	reg [31:0] master_0_wdata;
+	reg [31:0] master_0_addr;
+	
+	reg master_1_req;
+	reg master_1_cmd;
+	wire master_1_ack;
+	wire master_1_resp;
+	wire [31:0] master_1_rdata;
+	reg [31:0] master_1_wdata;
+	reg [31:0] master_1_addr;
+	
+	// slaves
+	wire slave_0_req;
+	wire slave_0_ack;
+	wire slave_0_cmd;
+	wire slave_0_resp;
+	wire [31:0]  slave_0_wdata;
+	wire [31:0]  slave_0_rdata;
+	wire [31:0] slave_0_addr;
+	
+	wire slave_1_req;
+	wire slave_1_ack;
+	wire slave_1_cmd;
+	wire slave_1_resp;
+	wire [31:0]  slave_1_wdata;
+	wire [31:0]  slave_1_rdata;
+	wire [31:0] slave_1_addr;
+	
+//	reg [31:0] vectornum, errors;         // bookkeeping variables
+//	reg [395:0] testvectors [10000:0];   // array of testvectors
+
+	// assign statements (if any)                          
+	crossbar i1 (
+	// port map - connection between master ports and signals/registers  
+		.clk(clk),
+		.reset(reset),
+		
+		.master_0_req(master_0_req),
+		.master_0_cmd(master_0_cmd),
+		.master_0_ack(master_0_ack),
+		.master_0_resp(master_0_resp),
+		.master_0_addr(master_0_addr),
+		.master_0_wdata(master_0_wdata),
+		.master_0_rdata(master_0_rdata),
+		
+		.master_1_req(master_1_req),
+		.master_1_cmd(master_1_cmd),
+		.master_1_ack(master_1_ack),
+		.master_1_resp(master_1_resp),
+		.master_1_addr(master_1_addr),
+		.master_1_wdata(master_1_wdata),
+		.master_1_rdata(master_1_rdata),
+		
+		.slave_0_req(slave_0_req),
+		.slave_0_ack(slave_0_ack),
+		.slave_0_cmd(slave_0_cmd),
+		.slave_0_resp(slave_0_resp),
+		.slave_0_rdata(slave_0_rdata),
+		.slave_0_wdata(slave_0_wdata),
+		.slave_0_addr(slave_0_addr),
+		
+		.slave_1_req(slave_1_req),
+		.slave_1_ack(slave_1_ack),
+		.slave_1_cmd(slave_1_cmd),
+		.slave_1_resp(slave_1_resp),
+		.slave_1_rdata(slave_1_rdata),
+		.slave_1_wdata(slave_1_wdata),
+		.slave_1_addr(slave_1_addr)
+	);
+	
+	slave slave_0 (
+		.clk(clk),
+		.reset(reset),
+		
+		.req(slave_0_req),
+		.cmd(slave_0_cmd),
+		.ack(slave_0_ack),
+		.resp(slave_0_resp),
+		
+		.addr(slave_0_addr),
+		.wdata(slave_0_wdata),
+		.rdata(slave_0_rdata)
+	);
+	
+	slave slave_1 (
+		.clk(clk),
+		.reset(reset),
+		
+		.req(slave_1_req),
+		.cmd(slave_1_cmd),
+		.ack(slave_1_ack),
+		.resp(slave_1_resp),
+		
+		.addr(slave_1_addr),
+		.wdata(slave_1_wdata),
+		.rdata(slave_1_rdata)
+	);
+	
+	reg req_0,req_1,req_2,req_3;
+	wire grant_0,grant_1,grant_2,grant_3;
+	
+	reg [3:0] req;
+	wire [3:0] grant;
+	
+	arbiter a(
+		.clk(clk),
+		.rst(reset),
+		
+		.req0(req_0),
+		.req1(req_1),
+		.req2(req_2),
+		.req3(req_3),
+		
+		.gnt0(grant_0),
+		.gnt1(grant_1),
+		.gnt2(grant_2),
+		.gnt3(grant_3)
+	);
+	
+	initial                                                
+	begin                                                  
+		// code that executes only once
+		clk = 1;
+		master_0_req = 0; master_1_req = 0;
+		master_1_cmd = 0; master_1_cmd = 0;
+		master_0_wdata = 0; master_1_wdata = 0;
+		master_0_addr = 0; master_1_addr = 0;
+		
+		reset = 1; #1 reset = 0;
+		
+		crossbar_transaction(1, 1, 'h00000001, 'hdeadbeaf, 0, 0, 0, 0);
+		crossbar_transaction(1, 1, 'h00000002, 'h12345678, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h00000001, 0, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h00000002, 0, 0, 0, 0, 0);
+		
+		#10;
+		
+		crossbar_transaction(1, 1, 'h80000001, 'ha5a5a5a5, 0, 0, 0, 0);
+		crossbar_transaction(1, 1, 'h80000005, 'h3f3f3f3f, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h80000001, 0, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h80000005, 0, 0, 0, 0, 0);
+		
+		#10;
+		
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h00000001, 'hd1d1d1d1);
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h00000002, 'h81818181);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h00000001, 0);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h00000002, 0);
+		
+		#10;
+		
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h80000001, 'hf0010033);
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h80000002, 'h91a00000);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h80000001, 0);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h80000002, 0);
+		
+		#10;
+		
+		crossbar_transaction(1, 1, 'h00000001, 'hdeadbeaf, 1, 1, 'h00000001, 'h07070707);
+		crossbar_transaction(1, 1, 'h00000001, 'hbcbcbcbc, 1, 1, 'h00000001, 'h87654321);
+		crossbar_transaction(1, 0, 'h00000001, 0, 1, 0, 'h00000001, 0);
+		crossbar_transaction(1, 0, 'h00000001, 0, 1, 0, 'h00000001, 0);
+
+		
+		$display("Running testbench");
+	end  
+	
+	always
+	begin
+		#1; clk = ~clk;
+	end
+	
+	task crossbar_transaction;
+		input m0_req, m0_cmd;
+		input [31:0] m0_addr, m0_wdata;
+		
+		input m1_req, m1_cmd;
+		input [31:0] m1_addr, m1_wdata;
+		
+		begin
+			if (clk) #1;
+			
+			master_0_req = m0_req; master_0_cmd = m0_cmd;
+			master_0_addr = m0_addr; master_0_wdata = m0_wdata;
+			
+			master_1_req = m1_req; master_1_cmd = m1_cmd;
+			master_1_addr = m1_addr; master_1_wdata = m1_wdata;
+			
+			if ((master_0_req && !master_0_cmd) || (master_1_req && !master_1_cmd))
+			begin
+				while (!master_0_ack && !master_1_ack) #2;
+				
+				master_0_req = 0; master_1_req = 0;
+				
+				while (!master_0_resp && !master_1_resp) #2;
+				
+				#2;
+			end
+			else
+			begin
+				while (!master_0_ack && !master_1_ack) #2;
+				
+				master_0_req = 0; master_1_req = 0;
+				
+				#2;
+			end
+
+		end
+	endtask
+	
+endmodule
+
+/* Slave response emulation module */
+module slave (
+	input clk,
+	input reset,
+	
+	output ack,
+	input req,
+	input cmd,			// 1 - write, 0 - read
+	output reg resp,
+	
+	input [31:0] addr,
+	input [31:0] wdata,
+	output reg [31:0] rdata
+	);
+	
+//	parameter DELAY = 2 * ($urandom%5);
+	
+	reg [31:0] mem [1023:0];
+	
+	assign ack = (req)?1:0;
+
+	assign rdata = 0;
+	
+	always @(posedge clk)
+	begin
+		if (reset)
+		begin
+			resp <= 0;
+			rdata <= 0;
+		end
+		else if (req && ack)
+		begin
+			if (cmd)
+				mem[addr & 'h000003ff] <= wdata;
+			else
+			begin
+				resp <= #4 1;
+				rdata <= #4 mem[addr & 'h000003ff];
+			end
+		end
+		
+		if (resp)
+			resp <= 0;
+	end
+
+endmodule
+
