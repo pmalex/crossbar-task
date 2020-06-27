@@ -23,22 +23,54 @@ module crossbar_vlg_tst();
 	reg [31:0] master_1_wdata;
 	reg [31:0] master_1_addr;
 	
+	reg master_2_req;
+	reg master_2_cmd;
+	wire master_2_ack;
+	wire master_2_resp;
+	wire [31:0] master_2_rdata;
+	reg [31:0] master_2_wdata;
+	reg [31:0] master_2_addr;
+	
+	reg master_3_req;
+	reg master_3_cmd;
+	wire master_3_ack;
+	wire master_3_resp;
+	wire [31:0] master_3_rdata;
+	reg [31:0] master_3_wdata;
+	reg [31:0] master_3_addr;
+	
 	// slaves
 	wire slave_0_req;
 	wire slave_0_ack;
 	wire slave_0_cmd;
 	wire slave_0_resp;
-	wire [31:0]  slave_0_wdata;
-	wire [31:0]  slave_0_rdata;
+	wire [31:0] slave_0_wdata;
+	wire [31:0] slave_0_rdata;
 	wire [31:0] slave_0_addr;
 	
 	wire slave_1_req;
 	wire slave_1_ack;
 	wire slave_1_cmd;
 	wire slave_1_resp;
-	wire [31:0]  slave_1_wdata;
-	wire [31:0]  slave_1_rdata;
+	wire [31:0] slave_1_wdata;
+	wire [31:0] slave_1_rdata;
 	wire [31:0] slave_1_addr;
+	
+	wire slave_2_req;
+	wire slave_2_ack;
+	wire slave_2_cmd;
+	wire slave_2_resp;
+	wire [31:0] slave_2_wdata;
+	wire [31:0] slave_2_rdata;
+	wire [31:0] slave_2_addr;
+	
+	wire slave_3_req;
+	wire slave_3_ack;
+	wire slave_3_cmd;
+	wire slave_3_resp;
+	wire [31:0] slave_3_wdata;
+	wire [31:0] slave_3_rdata;
+	wire [31:0] slave_3_addr;
 	
 //	reg [31:0] vectornum, errors;         // bookkeeping variables
 //	reg [395:0] testvectors [10000:0];   // array of testvectors
@@ -65,6 +97,22 @@ module crossbar_vlg_tst();
 		.master_1_wdata(master_1_wdata),
 		.master_1_rdata(master_1_rdata),
 		
+		.master_2_req(master_2_req),
+		.master_2_cmd(master_2_cmd),
+		.master_2_ack(master_2_ack),
+		.master_2_resp(master_2_resp),
+		.master_2_addr(master_2_addr),
+		.master_2_wdata(master_2_wdata),
+		.master_2_rdata(master_2_rdata),
+		
+		.master_3_req(master_3_req),
+		.master_3_cmd(master_3_cmd),
+		.master_3_ack(master_3_ack),
+		.master_3_resp(master_3_resp),
+		.master_3_addr(master_3_addr),
+		.master_3_wdata(master_3_wdata),
+		.master_3_rdata(master_3_rdata),
+		
 		.slave_0_req(slave_0_req),
 		.slave_0_ack(slave_0_ack),
 		.slave_0_cmd(slave_0_cmd),
@@ -79,7 +127,23 @@ module crossbar_vlg_tst();
 		.slave_1_resp(slave_1_resp),
 		.slave_1_rdata(slave_1_rdata),
 		.slave_1_wdata(slave_1_wdata),
-		.slave_1_addr(slave_1_addr)
+		.slave_1_addr(slave_1_addr),
+		
+		.slave_2_req(slave_2_req),
+		.slave_2_ack(slave_2_ack),
+		.slave_2_cmd(slave_2_cmd),
+		.slave_2_resp(slave_2_resp),
+		.slave_2_rdata(slave_2_rdata),
+		.slave_2_wdata(slave_2_wdata),
+		.slave_2_addr(slave_2_addr),
+		
+		.slave_3_req(slave_3_req),
+		.slave_3_ack(slave_3_ack),
+		.slave_3_cmd(slave_3_cmd),
+		.slave_3_resp(slave_3_resp),
+		.slave_3_rdata(slave_3_rdata),
+		.slave_3_wdata(slave_3_wdata),
+		.slave_3_addr(slave_3_addr)
 	);
 	
 	slave slave_0 (
@@ -110,8 +174,33 @@ module crossbar_vlg_tst();
 		.rdata(slave_1_rdata)
 	);
 	
-	reg req_0,req_1,req_2,req_3;
-	wire grant_0,grant_1,grant_2,grant_3;
+	slave slave_2 (
+		.clk(clk),
+		.reset(reset),
+		
+		.req(slave_2_req),
+		.cmd(slave_2_cmd),
+		.ack(slave_2_ack),
+		.resp(slave_2_resp),
+		
+		.addr(slave_2_addr),
+		.wdata(slave_2_wdata),
+		.rdata(slave_2_rdata)
+	);
+	
+	slave slave_3 (
+		.clk(clk),
+		.reset(reset),
+		
+		.req(slave_3_req),
+		.cmd(slave_3_cmd),
+		.ack(slave_3_ack),
+		.resp(slave_3_resp),
+		
+		.addr(slave_3_addr),
+		.wdata(slave_3_wdata),
+		.rdata(slave_3_rdata)
+	);
 	
 	reg [3:0] req;
 	wire [3:0] grant;
@@ -120,27 +209,29 @@ module crossbar_vlg_tst();
 		.clk(clk),
 		.rst(reset),
 		
-		.req0(req_0),
-		.req1(req_1),
-		.req2(req_2),
-		.req3(req_3),
+		.req0(req[0]),
+		.req1(req[1]),
+		.req2(req[2]),
+		.req3(req[3]),
 		
-		.gnt0(grant_0),
-		.gnt1(grant_1),
-		.gnt2(grant_2),
-		.gnt3(grant_3)
+		.gnt0(grant[0]),
+		.gnt1(grant[1]),
+		.gnt2(grant[2]),
+		.gnt3(grant[3])
 	);
 	
 	initial                                                
 	begin                                                  
 		// code that executes only once
 		clk = 1;
-		master_0_req = 0; master_1_req = 0;
-		master_1_cmd = 0; master_1_cmd = 0;
-		master_0_wdata = 0; master_1_wdata = 0;
-		master_0_addr = 0; master_1_addr = 0;
+		master_0_req = 0; master_1_req = 0; master_2_req = 0; master_3_req = 0;
+		master_0_cmd = 0; master_1_cmd = 0; master_2_cmd = 0; master_3_cmd = 0;
+		master_0_wdata = 0; master_1_wdata = 0; master_2_wdata = 0; master_3_wdata = 0;
+		master_0_addr = 0; master_1_addr = 0; master_2_addr = 0; master_3_addr = 0;
 		
-		reset = 1; #1 reset = 0;
+		req = 0;
+		
+		reset = 1; #1 reset = 0; #1;
 		
 		crossbar_transaction(1, 1, 'h00000001, 'hdeadbeaf, 0, 0, 0, 0);
 		crossbar_transaction(1, 1, 'h00000002, 'h12345678, 0, 0, 0, 0);
@@ -149,10 +240,10 @@ module crossbar_vlg_tst();
 		
 		#10;
 		
-		crossbar_transaction(1, 1, 'h80000001, 'ha5a5a5a5, 0, 0, 0, 0);
-		crossbar_transaction(1, 1, 'h80000005, 'h3f3f3f3f, 0, 0, 0, 0);
-		crossbar_transaction(1, 0, 'h80000001, 0, 0, 0, 0, 0);
-		crossbar_transaction(1, 0, 'h80000005, 0, 0, 0, 0, 0);
+		crossbar_transaction(1, 1, 'h40000001, 'ha5a5a5a5, 0, 0, 0, 0);
+		crossbar_transaction(1, 1, 'h40000005, 'h3f3f3f3f, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h40000001, 0, 0, 0, 0, 0);
+		crossbar_transaction(1, 0, 'h40000005, 0, 0, 0, 0, 0);
 		
 		#10;
 		
@@ -163,10 +254,10 @@ module crossbar_vlg_tst();
 		
 		#10;
 		
-		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h80000001, 'hf0010033);
-		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h80000002, 'h91a00000);
-		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h80000001, 0);
-		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h80000002, 0);
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h40000001, 'hf0010033);
+		crossbar_transaction(0, 0, 0, 0, 1, 1, 'h40000002, 'h91a00000);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h40000001, 0);
+		crossbar_transaction(0, 0, 0, 0, 1, 0, 'h40000002, 0);
 		
 		#10;
 		
@@ -238,8 +329,6 @@ module slave (
 	input [31:0] wdata,
 	output reg [31:0] rdata
 	);
-	
-//	parameter DELAY = 2 * ($urandom%5);
 	
 	reg [31:0] mem [1023:0];
 	
