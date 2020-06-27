@@ -5,6 +5,8 @@ Crossbar base version +1 доп. задание, +2 доп. задание
 
 crossbar.v - код самого кроссбара
 
+arbiter.v - реализация roundrobin (сторонняя)
+
 simulation/modelsim/crossbar.vt - тестбенч для него
 
 simulation/modelsim/run.do - добавление проводов в мультисим
